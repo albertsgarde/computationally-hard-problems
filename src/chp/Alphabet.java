@@ -34,6 +34,10 @@ public class Alphabet implements Iterable<Character> {
 		var charList = s.chars().mapToObj(e->(char)e).collect(Collectors.toList());
 		return this.symbols.containsAll(charList);
 	}
+	
+	public int size() {
+		return symbols.size();
+	}
 
 	@Override
 	public Iterator<Character> iterator() {
