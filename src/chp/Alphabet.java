@@ -35,6 +35,10 @@ public class Alphabet implements Iterable<Character> {
 		return this.symbols.containsAll(charList);
 	}
 	
+	public Character get(int index) {
+		return symbols.get(index);
+	}
+	
 	public int size() {
 		return symbols.size();
 	}
