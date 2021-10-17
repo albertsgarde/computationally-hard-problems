@@ -1,11 +1,13 @@
 package chp;
 
+import java.io.BufferedReader;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 public class Input {
 	private final String s;
@@ -73,6 +75,11 @@ public class Input {
 		return new Input(s, unexpandedSubstrings, subsets);
 	}
 
+	public static Input buildFromReader(BufferedReader reader) throws IncorrectInputException {
+		var lines = reader.lines().collect(Collectors.toList());
+		return Input.buildFromInput(lines);
+	}
+	
 	public String getS() {
 		return this.s;
 	}
