@@ -2,11 +2,12 @@ package chp;
 
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Iterator;
 import java.util.List;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
-public class Alphabet {
+public class Alphabet implements Iterable<Character> {
 	private final List<Character> symbols;
 	
 	public Alphabet(Collection<Character> symbols) {
@@ -29,8 +30,13 @@ public class Alphabet {
 	}
 	
 	public boolean isInLanguage(String s) {
-		// Perfrom some black magic to get a list of chars in the input string.
+		// Perform some black magic to get a list of chars in the input string.
 		var charList = s.chars().mapToObj(e->(char)e).collect(Collectors.toList());
 		return this.symbols.containsAll(charList);
+	}
+
+	@Override
+	public Iterator<Character> iterator() {
+		return symbols.iterator();
 	}
 }
