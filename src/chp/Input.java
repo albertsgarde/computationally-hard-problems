@@ -6,8 +6,10 @@ import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 public class Input {
@@ -23,7 +25,7 @@ public class Input {
 	private Input(String s, List<String> unexpandedSubstrings, Map<Character, List<String>> subsets) {
 		this.s = s;
 		this.unexpandedSubstrings = unexpandedSubstrings;
-		this.subsets = subsets;
+		this.subsets = Collections.unmodifiableMap(subsets);
 	}
 	
 	public static Input buildFromInput(Collection<String> inputLines) throws IncorrectInputException {
@@ -88,8 +90,67 @@ public class Input {
 		return this.unexpandedSubstrings;
 	}
 	public Map<Character, List<String>> getSubsets() {
-		return Collections.unmodifiableMap(this.subsets);
+		return subsets;
 	}
+	
+	/**
+	 * Performs various optimizations on the input to reduce the work needed to find the solution and sometimes fail early.
+	 * @return The optimized input or an empty optional if no solution is possible.
+	 */
+	public Optional<Input> optimize() {
+		// Find the symbols in the GAMMA alphabet actually used in the unexpanded substrings.
+		var usedGammaSymbols = new HashSet<Character>();
+		for (var s : unexpandedSubstrings) {
+			Collection<Character> sGammaSymbols = s.chars().mapToObj(c->(char)c)
+					.filter(c -> Main.GAMMA.isInAlphabet(c))
+					.collect(Collectors.toList());
+			usedGammaSymbols.addAll(sGammaSymbols);
+		}
+		// Remove expansion lists for symbols that aren't in any of the unexpanded substrings.
+		var optimizedSubsets = new HashMap<Character, List<String>>();
+		for (var entry : this.subsets.entrySet()) {
+			if (usedGammaSymbols.contains(entry.getKey()))
+				optimizedSubsets.put(entry.getKey(), entry.getValue());
+		}
+		
+		// Find consecutive repetitions of GAMMA symbols in the unexpanded substrings.
+		var maxRepetitions = new HashMap<Character, Integer>();
+		for (var c : Main.GAMMA) {
+			var repetitions = 0;
+			var repetitionString = "";
+			while (true) {
+				repetitionString += c;
+				var temp = repetitionString;
+				if (!unexpandedSubstrings.stream().anyMatch(s -> s.contains(temp)))
+					break;
+				++repetitions;
+			}
+			maxRepetitions.put(c, repetitions);
+		}
+		
+		{ // Remove expansions whose maximal consecutive repetitions aren't substrings of the target string.
+			var subsets = new HashMap<Character,List<String>>();
+			for (var entry : optimizedSubsets.entrySet()) {
+				List<String> optimizedList = entry.getValue().stream()
+						.filter(s -> this.s.contains(repeatString(s, maxRepetitions.get(entry.getKey()))))
+						.collect(Collectors.toList());
+				if (optimizedList.size() == 0)
+					return Optional.empty();
+				subsets.put(entry.getKey(), optimizedList);
+			}
+			optimizedSubsets = subsets;
+		}
+		return Optional.of(new Input(s, unexpandedSubstrings, optimizedSubsets));
+	}
+	
+	private static String repeatString(String s, int repetitions) {
+		var result = "";
+		for (var i = 0; i < repetitions; ++i) {
+			result += s;
+		}
+		return result;
+	}
+	
 	public Map<Character, String> chooseSubsets(int[] expansionIndices) {
 		var result = new HashMap<Character, String>();
 		for (var entry : subsets.entrySet()) {

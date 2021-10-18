@@ -98,4 +98,82 @@ public class Tests {
 			throw new RuntimeException("Return YES incorrectly.");
 		}
 	}
+	
+	public static void test_correctness_input_optimized_yes() {
+		var lines = new String[] {
+	 		"2",
+	 		"aaa",
+	 		"ABD",
+	 		"ABa",
+			"A:a",
+			"B:a",
+			"C:a",
+			"D:a"
+		};
+		Input input;
+		try {
+			input = Input.buildFromInput(Arrays.stream(lines).collect(Collectors.toList()));
+		} catch (IncorrectInputException e) {
+			throw new RuntimeException("Test failed.");
+		}
+		var optimizedInputOption = input.optimize();
+		if (optimizedInputOption.isEmpty()) {
+			throw new RuntimeException("Returned NO incorrectly.");
+		}
+		input = optimizedInputOption.get();
+		var solution_option = Algorithm.basic_solve(input);
+		if (solution_option.isEmpty()) {
+			throw new RuntimeException("Returned NO incorrectly.");
+		}
+		var solution = solution_option.get();
+		if (!(solution.get('A').equals("a") && solution.get('B').equals("a") && solution.get('D').equals("a"))) {
+			System.out.println("Incorrect solution:");
+			for (var entry : solution.entrySet()) 
+				System.out.println(entry.getKey() + ": " + entry.getValue());
+			throw new RuntimeException("Incorrect solution.");
+		}
+	}
+	
+	public static void test_correctness_input_optimized_no() {
+		var reader = testReader(1);
+		Input input;
+		try {
+			input = Input.buildFromReader(reader);
+		} catch (IncorrectInputException e) {
+			throw new RuntimeException("Test failed.");
+		}
+		var optimizedInputOption = input.optimize();
+		if (optimizedInputOption.isEmpty()) {
+			throw new RuntimeException("Returned NO incorrectly.");
+		}
+		input = optimizedInputOption.get();
+		var solution_option = Algorithm.basic_solve(input);
+		if (solution_option.isPresent()) {
+			throw new RuntimeException("Return YES incorrectly.");
+		}
+	}
+	
+	public static void test_speed_optimized_all() {
+		for (var i = 1; i <= 6; ++i) {
+			var reader = testReader(i);
+			Input input;
+			try {
+				input = Input.buildFromReader(reader);
+			} catch (IncorrectInputException e) {
+				throw new RuntimeException("Test failed.");
+			}
+			var optimizedInputOption = input.optimize();
+			if (optimizedInputOption.isEmpty()) {
+				System.out.println(i + ": NO. Optimization");
+			}
+			input = optimizedInputOption.get();
+			var solution_option = Algorithm.basic_solve(input);
+			if (solution_option.isPresent()) {
+				System.out.println(i + ": YES");
+			} else {
+				System.out.println(i + ": NO. Algorithm");
+			}
+		}
+		
+	}
 }
