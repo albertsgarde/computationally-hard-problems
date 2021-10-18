@@ -22,18 +22,23 @@ public class Algorithm {
 	
 	public static Optional<Map<Character, String>> basic_solve(Input input) {
 		List<Integer> maxIndices = Main.GAMMA.symbols().stream()
-				.map(symbol -> input.getSubsets().get(Main.GAMMA.get(symbol)).size())
+				.map(symbol -> {
+					if (input.getSubsets().containsKey(symbol))
+						return input.getSubsets().get(symbol).size();
+					else 
+						return 0;
+				})
 				.collect(Collectors.toList());
-		var expandIndices = new int[Main.GAMMA.size()];
+		var expandIndices = new int[maxIndices.size()];
 		Arrays.fill(expandIndices, 0);
-		while (iterateIndices(expandIndices, maxIndices)) {
+		do {
 			var expansionMap = input.chooseSubsets(expandIndices);
 			
 			if (input.getUnexpandedSubstrings().stream()
 				.allMatch(s -> input.getS().contains(input.expand(s, expansionMap))))
 				return Optional.of(expansionMap);
 				
-		}
+		} while (iterateIndices(expandIndices, maxIndices));
 		return Optional.empty();
 	}
 }

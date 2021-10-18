@@ -1,25 +1,25 @@
 package chp;
 
+import java.io.BufferedReader;
+import java.io.FileNotFoundException;
+import java.io.FileReader;
 import java.util.Arrays;
 import java.util.stream.Collectors;
 
 public class Tests {
-	static void test_input_build_example() {
-		var lines = new String[] {
-	 		"4",
-	 		"abdde",
-	 		"ABD",
-	 		"DDE",
-	 		"AAB",
-	 		"ABd",
-	 		"A:a,b,c,d,e,f,dd",
-	 		"B:a,b,c,d,e,f,dd",
-	 		"C:a,b,c,d,e,f,dd",
-	 		"D:a,b,c,d,e,f,dd",
-	 		"E:aa,bd,c,d,e"
-		};
+	private static BufferedReader testReader(int file) {
 		try {
-			var input = Input.buildFromInput(Arrays.stream(lines).collect(Collectors.toList()));
+			return new BufferedReader(new FileReader("test_data\\test0" + file + ".swe"));
+		} catch (FileNotFoundException e1) {
+			e1.printStackTrace();
+			throw new RuntimeException("Could not read file.");
+		}
+	}
+	
+	public static void test_input_build_example() {
+		var reader = testReader(1);
+		try {
+			var input = Input.buildFromReader(reader);
 			if (!input.getS().equals("abdde")) 
 				throw new RuntimeException("String S loaded incorrectly. Value: " + input.getS());
 			if (input.getUnexpandedSubstrings().size() != 4)
@@ -39,31 +39,63 @@ public class Tests {
 		}
 	}
 	
-	static void test_expansion() {
-		var lines = new String[] {
-		 		"4",
-		 		"abdde",
-		 		"ABD",
-		 		"DDE",
-		 		"AAB",
-		 		"ABd",
-		 		"A:a,b,c,d,e,f,dd",
-		 		"B:a,b,c,d,e,f,dd",
-		 		"C:a,b,c,d,e,f,dd",
-		 		"D:a,b,c,d,e,f,dd",
-		 		"E:aa,bd,c,d,e"
-		};
+	public static void test_expansion() {
+		var reader = testReader(1);
 		Input input;
 		try {
-			input = Input.buildFromInput(Arrays.stream(lines).collect(Collectors.toList()));
+			input = Input.buildFromReader(reader);
 		} catch (IncorrectInputException e) {
-			throw new RuntimeException("Test failed");
+			throw new RuntimeException("Test failed.");
 		}
 		var expansionMap = input.chooseSubsets(new int[] {3,6,0,1,1});
 		{
 			var expansion = input.expand("BCE", expansionMap);
 			if(!expansion.equals("ddabd"))
 				throw new RuntimeException("Incorrect expansion. Got " + expansion);
+		}
+	}
+	
+	public static void test_correctness_basic_yes() {
+		var lines = new String[] {
+	 		"2",
+	 		"aaa",
+	 		"ABD",
+	 		"ABa",
+			"A:a",
+			"B:a",
+			"C:a",
+			"D:a"
+		};
+		Input input;
+		try {
+			input = Input.buildFromInput(Arrays.stream(lines).collect(Collectors.toList()));
+		} catch (IncorrectInputException e) {
+			throw new RuntimeException("Test failed.");
+		}
+		var solution_option = Algorithm.basic_solve(input);
+		if (solution_option.isEmpty()) {
+			throw new RuntimeException("Returned NO incorrectly.");
+		}
+		var solution = solution_option.get();
+		if (!(solution.get('A').equals("a") && solution.get('B').equals("a") && solution.get('D').equals("a"))) {
+			System.out.println("Incorrect solution:");
+			for (var entry : solution.entrySet()) 
+				System.out.println(entry.getKey() + ": " + entry.getValue());
+			throw new RuntimeException("Incorrect solution.");
+		}
+	}
+	
+	public static void test_correctness_basic_no() {
+		var reader = testReader(1);
+		Input input;
+		try {
+			input = Input.buildFromReader(reader);
+		} catch (IncorrectInputException e) {
+			throw new RuntimeException("Test failed.");
+		}
+		var solution_option = Algorithm.basic_solve(input);
+		if (solution_option.isPresent()) {
+			throw new RuntimeException("Return YES incorrectly.");
 		}
 	}
 }

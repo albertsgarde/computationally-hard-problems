@@ -27,6 +27,10 @@ public class Main {
 			System.out.println("Test 'input_build_example' successful");
 			Tests.test_expansion();
 			System.out.println("Test 'expansion' successful");
+			Tests.test_correctness_basic_yes();
+			System.out.println("Test 'correctness_basic_yes' successful");
+			Tests.test_correctness_basic_no();
+			System.out.println("Test 'correctness_basic_no' successful");
 		}
 		
 		
@@ -39,7 +43,15 @@ public class Main {
 			System.out.println("NO");
 			return;
 		}
-		System.out.println("YES");
+		var solution_option = Algorithm.basic_solve(input);
+		if (solution_option.isEmpty()) {
+			System.out.println("NO");
+		} else {
+			var solution = solution_option.get();
+			for (var entry : solution.entrySet()) {
+				System.out.println(entry.getKey() + ": " + entry.getValue());
+			}
+		}
 		
 	}
 
