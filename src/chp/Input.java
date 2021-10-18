@@ -4,6 +4,7 @@ import java.io.BufferedReader;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -87,6 +88,35 @@ public class Input {
 		return this.unexpandedSubstrings;
 	}
 	public Map<Character, List<String>> getSubsets() {
-		return this.subsets;
+		return Collections.unmodifiableMap(this.subsets);
+	}
+	public Map<Character, String> chooseSubsets(int[] expansionIndices) {
+		var result = new HashMap<Character, String>();
+		for (var entry : subsets.entrySet()) {
+			result.put(entry.getKey(), entry.getValue().get(expansionIndices[Main.charToIndex(entry.getKey())]));
+		}
+		return result;
+	}
+	public String expand(String s, Map<Character, String> expansions) {
+		var result = new StringBuilder();
+		for (var c : s.toCharArray()) {
+			if (Main.SIGMA.isInAlphabet(c)) {
+				result.append(c);
+			} else if (Main.GAMMA.isInAlphabet(c)) {
+				result.append(expansions.get(c));
+			}
+		}
+		return result.toString();
+	}
+	public String expand(String s, int[] expansionIndices) {
+		var result = new StringBuilder();
+		for (var c : s.toCharArray()) {
+			if (Main.SIGMA.isInAlphabet(c)) {
+				result.append(c);
+			} else if (Main.GAMMA.isInAlphabet(c)) {
+				result.append(subsets.get(c).get(expansionIndices[Main.charToIndex(c)]));
+			}
+		}
+		return result.toString();
 	}
 }

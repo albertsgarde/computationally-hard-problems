@@ -38,4 +38,32 @@ public class Tests {
 			throw new RuntimeException("Failed to validate correct input.");
 		}
 	}
+	
+	static void test_expansion() {
+		var lines = new String[] {
+		 		"4",
+		 		"abdde",
+		 		"ABD",
+		 		"DDE",
+		 		"AAB",
+		 		"ABd",
+		 		"A:a,b,c,d,e,f,dd",
+		 		"B:a,b,c,d,e,f,dd",
+		 		"C:a,b,c,d,e,f,dd",
+		 		"D:a,b,c,d,e,f,dd",
+		 		"E:aa,bd,c,d,e"
+		};
+		Input input;
+		try {
+			input = Input.buildFromInput(Arrays.stream(lines).collect(Collectors.toList()));
+		} catch (IncorrectInputException e) {
+			throw new RuntimeException("Test failed");
+		}
+		var expansionMap = input.chooseSubsets(new int[] {3,6,0,1,1});
+		{
+			var expansion = input.expand("BCE", expansionMap);
+			if(!expansion.equals("ddabd"))
+				throw new RuntimeException("Incorrect expansion. Got " + expansion);
+		}
+	}
 }

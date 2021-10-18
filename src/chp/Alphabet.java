@@ -42,6 +42,10 @@ public class Alphabet implements Iterable<Character> {
 	public int size() {
 		return symbols.size();
 	}
+	
+	public List<Character> symbols() {
+		return symbols;
+	}
 
 	@Override
 	public Iterator<Character> iterator() {
