@@ -35,7 +35,8 @@ public class Algorithm {
 			var expansionMap = input.chooseSubsets(expandIndices);
 			
 			if (input.getUnexpandedSubstrings().stream()
-				.allMatch(s -> input.getS().contains(input.expand(s, expansionMap))))
+					.map(s -> input.expand(s, expansionMap))
+					.allMatch(s -> input.getS().contains(s)))
 				return Optional.of(expansionMap);
 				
 		} while (iterateIndices(expandIndices, maxIndices));

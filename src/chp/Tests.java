@@ -165,6 +165,7 @@ public class Tests {
 			var optimizedInputOption = input.optimize();
 			if (optimizedInputOption.isEmpty()) {
 				System.out.println(i + ": NO. Optimization");
+				continue;
 			}
 			input = optimizedInputOption.get();
 			var solution_option = Algorithm.basic_solve(input);

@@ -98,19 +98,25 @@ public class Input {
 	 * @return The optimized input or an empty optional if no solution is possible.
 	 */
 	public Optional<Input> optimize() {
+		var optimizedUnexpandedSubstrings = unexpandedSubstrings;
+		var optimizedSubsets = subsets;
+		
 		// Find the symbols in the GAMMA alphabet actually used in the unexpanded substrings.
 		var usedGammaSymbols = new HashSet<Character>();
-		for (var s : unexpandedSubstrings) {
+		for (var s : optimizedUnexpandedSubstrings) {
 			Collection<Character> sGammaSymbols = s.chars().mapToObj(c->(char)c)
 					.filter(c -> Main.GAMMA.isInAlphabet(c))
 					.collect(Collectors.toList());
 			usedGammaSymbols.addAll(sGammaSymbols);
 		}
-		// Remove expansion lists for symbols that aren't in any of the unexpanded substrings.
-		var optimizedSubsets = new HashMap<Character, List<String>>();
-		for (var entry : this.subsets.entrySet()) {
-			if (usedGammaSymbols.contains(entry.getKey()))
-				optimizedSubsets.put(entry.getKey(), entry.getValue());
+		{
+			// Remove expansion lists for symbols that aren't in any of the unexpanded substrings.
+			var subsets = new HashMap<Character, List<String>>();
+			for (var entry : this.subsets.entrySet()) {
+				if (usedGammaSymbols.contains(entry.getKey()))
+					subsets.put(entry.getKey(), entry.getValue());
+			}
+			optimizedSubsets = subsets;
 		}
 		
 		// Find consecutive repetitions of GAMMA symbols in the unexpanded substrings.
@@ -121,7 +127,7 @@ public class Input {
 			while (true) {
 				repetitionString += c;
 				var temp = repetitionString;
-				if (!unexpandedSubstrings.stream().anyMatch(s -> s.contains(temp)))
+				if (!optimizedUnexpandedSubstrings.stream().anyMatch(s -> s.contains(temp)))
 					break;
 				++repetitions;
 			}
@@ -140,13 +146,63 @@ public class Input {
 			}
 			optimizedSubsets = subsets;
 		}
-		return Optional.of(new Input(s, unexpandedSubstrings, optimizedSubsets));
+
+		{ // Expand GAMMA symbols that only have one possible expansion.
+			var unexpandedSubstrings = new ArrayList<String>();
+			for (var unexpandedSubstring : optimizedUnexpandedSubstrings) {
+				for (var entry : optimizedSubsets.entrySet()) {
+					if (entry.getValue().size() == 1) {
+						unexpandedSubstring = unexpandedSubstring.replaceAll("" + entry.getKey(), entry.getValue().get(0));
+					}
+				}
+				unexpandedSubstrings.add(unexpandedSubstring);
+			}
+			optimizedUnexpandedSubstrings = unexpandedSubstrings;
+		}
+
+		{ // GAMMA symbols in unexpandedSubstrings surrounded by SIGMA symbols may have some expansions removed.
+			var subsets = new HashMap<Character,List<String>>();
+			for (var entry : optimizedSubsets.entrySet()) {
+				var expandableStrings = new ArrayList<String>();
+				for (var unexpandedSubstring : optimizedUnexpandedSubstrings) {
+					var string = new StringBuilder();
+					unexpandedSubstring.chars().forEach(cInt -> {
+							var c = (char)cInt;
+							if (c == entry.getKey() || Main.SIGMA.isInAlphabet(c))
+								string.append(c);
+							else if (string.length() > 0) {
+								expandableStrings.add(string.toString());
+								string.setLength(0);
+							}
+						}
+					);
+				}
+				var optimizedExpansions = entry.getValue().stream()
+						.filter(expansion -> expandableStrings.stream()
+								.map(s -> s.replace("" + entry.getKey(), expansion))
+								.allMatch(s -> this.s.contains(s)))
+						.collect(Collectors.toList());
+				if (optimizedExpansions.size() == 0)
+					return Optional.empty();
+				subsets.put(entry.getKey(), optimizedExpansions);
+			}
+			optimizedSubsets = subsets;
+		}
+		return Optional.of(new Input(s, optimizedUnexpandedSubstrings, optimizedSubsets));
 	}
 	
 	private static String repeatString(String s, int repetitions) {
 		var result = "";
 		for (var i = 0; i < repetitions; ++i) {
 			result += s;
+		}
+		return result;
+	}
+	
+	private static int totalSubsets(Map<Character, List<String>> subsets) {
+		var result = 0;
+		for (var subset : subsets.values()) {
+			result +=subset.size();
 		}
 		return result;
 	}
