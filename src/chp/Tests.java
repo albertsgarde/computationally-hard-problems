@@ -154,6 +154,7 @@ public class Tests {
 	}
 	
 	public static void test_speed_optimized_all() {
+		var correctResults = new boolean[] {false, true, false, true, false, true};
 		for (var i = 1; i <= 6; ++i) {
 			var reader = testReader(i);
 			Input input;
@@ -164,14 +165,20 @@ public class Tests {
 			}
 			var optimizedInputOption = input.optimize();
 			if (optimizedInputOption.isEmpty()) {
+				if (correctResults[i-1]) 
+					throw new RuntimeException("Returned NO incorrectly.");
 				System.out.println(i + ": NO. Optimization");
 				continue;
 			}
 			input = optimizedInputOption.get();
 			var solution_option = Algorithm.basic_solve(input);
 			if (solution_option.isPresent()) {
+				if (!correctResults[i-1]) 
+					throw new RuntimeException("Returned YES incorrectly.");
 				System.out.println(i + ": YES");
 			} else {
+				if (correctResults[i-1]) 
+					throw new RuntimeException("Returned NO incorrectly.");
 				System.out.println(i + ": NO. Algorithm");
 			}
 		}
