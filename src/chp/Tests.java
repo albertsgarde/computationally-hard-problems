@@ -144,7 +144,7 @@ public class Tests {
 		}
 		var optimizedInputOption = input.optimize();
 		if (optimizedInputOption.isEmpty()) {
-			throw new RuntimeException("Returned NO incorrectly.");
+			return;
 		}
 		input = optimizedInputOption.get();
 		var solution_option = Algorithm.basic_solve(input);
